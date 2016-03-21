@@ -70,7 +70,6 @@ case $key in
 esac
 shift
 done
-
 ######################### IntelMQ ##############################################
 echo ' ┌▶ IntelMQ'
 echo ' ├─▶ Install base apt packages'
@@ -113,7 +112,7 @@ echo ' ├──▶ n6stomp Collector'
 echo ' ├──▶ XMPP Collector'
     pip2 install -q -r /tmp/intelmq/intelmq/bots/collectors/xmpp/REQUIREMENTS.txt
 echo ' ├──▶ Abusix Expert'
-    pip2 install -q -U git+git://github.com/mariuszlitwin/querycontacts
+    pip2 install -q querycontacts
 echo ' ├──▶ ASN_Lookup Expert'
     pip2 install -q -r /tmp/intelmq/intelmq/bots/experts/asn_lookup/REQUIREMENTS.txt
     mkdir /opt/intelmq/var/lib/bots/asn_lookup/
@@ -122,14 +121,12 @@ echo ' ├──▶ ASN_Lookup Expert'
     mv /tmp/rib.*.bz2 /tmp/rib.bz2
     pyasn_util_convert.py --single rib.bz2 ipasn.dat
     mv /tmp/ipasn.dat /opt/intelmq/var/lib/bots/asn_lookup/ipasn.dat
-    chown -R intelmq.intelmq /opt/intelmq/var/lib/bots/asn_lookup
 echo ' ├──▶ MaxMind GeoIP Expert'
     pip2 install -q -r /tmp/intelmq/intelmq/bots/experts/maxmind_geoip/REQUIREMENTS.txt
     mkdir -p /opt/intelmq/var/lib/bots/maxmind_geoip
     wget -q http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz -O /tmp/GeoLite2-City.mmdb.gz
     gunzip /tmp/GeoLite2-City.mmdb.gz
     mv /tmp/GeoLite2-City.mmdb /opt/intelmq/var/lib/bots/maxmind_geoip/GeoLite2-City.mmdb
-    chown -R intelmq.intelmq /opt/intelmq/var/lib/bots/maxmind_geoip
 echo ' ├──▶ Tor_Nodes Expert'
     mkdir -p /opt/intelmq/var/lib/bots/tor_nodes
     wget -q https://internet2.us/static/latest.bz2 -O /tmp/latest.bz2
@@ -151,6 +148,7 @@ echo ' ├─▶ Base config'
     echo 'export PATH="$PATH:$HOME/bin"' >> /opt/intelmq/.profile
 echo ' ├─▶ Move default config to /opt/intelmq, fixes'
     mkdir -p /opt/intelmq/var/log
+    mkdir /opt/intelmq/var/lib/bots/file-output
     cp /tmp/intelmq/intelmq/conf/* /opt/intelmq/etc/
     cp /tmp/intelmq/intelmq/bots/BOTS /opt/intelmq/etc/
     chmod -R 0770 /opt/intelmq
@@ -164,8 +162,8 @@ echo ' ├─▶ Add init script for redis'
 echo ' └─▶ Add IntelMQ bot DB renewal script to cron.d (as intelmq)'
     mkdir -p /opt/intelmq_bootstrap
     wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/jobs/000.asn_lookup_refresh.sh -O /opt/intelmq_bootstrap/000.asn_lookup_refresh.sh
-    wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/jobs/001.maxmind_geoip_refresh.sh -O /opt/intelmq_bootsrap/001.maxmind_geoip_refresh.sh
-    wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/jobs/002.tor_nodes_refresh.sh -O /opt/intelmq_bootsrap/002.tor_nodes_refresh.sh
+    wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/jobs/001.maxmind_geoip_refresh.sh -O /opt/intelmq_bootstrap/001.maxmind_geoip_refresh.sh
+    wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/jobs/002.tor_nodes_refresh.sh -O /opt/intelmq_bootstrap/002.tor_nodes_refresh.sh
     chown -R intelmq.intelmq /opt/intelmq_bootsrap
     chmod -R u+x /opt/intelmq_bootsrap 
     echo '# /etc/cron.d/intelmqdbs: crontab entries for the IntelMQ DBs renewal script
@@ -197,7 +195,7 @@ if [ -n "$HTTPD_AUTH" ]; then
     # Code below configure IntelMQ Manager to use mod_auth_basic as described here:
     # Ref: https://github.com/certtools/intelmq-manager/blob/master/docs/INSTALL.md#basic-authentication-optional
     # After this you need to modify htpasswd to use better login
-    if [ $HTTPD_AUTH -eq "basic" ]; then
+    if [ $HTTPD_AUTH = "basic" ]; then
         echo ' ┌▶ Auth module: mod_auth_basic'
         echo ' ├─▶ Install necessary APT packages'
         apt-get -q install apache2-utils
@@ -212,7 +210,7 @@ if [ -n "$HTTPD_AUTH" ]; then
     # Code below configure IntelMQ Manager to use mod_auth_openidc 
     # (Google OAuth2) as described here:
     # Ref: https://github.com/pingidentity/mod_auth_openidc
-    if [ $HTTPD_AUTH -eq "google" ]; then
+    if [ $HTTPD_AUTH = "google" ]; then
         echo ' ─▶ Under development. Sorry'
         #echo ' ┌──▶ Auth module: libapache2-mod-auth-openidc-1.8.8-1'
         #echo ' ├─▶ Download and install mod-auth-openidc deb package'
@@ -238,5 +236,3 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 30 2 * * 1  root   /opt/letsencrypt/letsencrypt-auto renew >> /var/log/le-renew.log' > /etc/cron.d/letsencrypt
 fi
-
-
