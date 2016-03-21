@@ -24,6 +24,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 # Verify if LC_ALL is set
 if [ -n "$LC_ALL" ]; then
+    echo "I additionally checked locale, looks fine"
+else
     echo "LC_ALL locale is not set, shame on you"
     sleep 2
     echo "OK, I will setup it to C..."
