@@ -22,6 +22,14 @@ if [ "$(id -u)" != "0" ]; then
     sudo bash "$0" --with-sudo
     exit 0
 fi
+# Verify if LC_ALL is set
+if [ -n "$LC_ALL" ]; then
+    echo "LC_ALL locale is not set, shame on you"
+    sleep 2
+    echo "OK, I will setup it to C..."
+    export LC_ALL="C"
+    sleep 2
+fi
 # Parse run arguments:
 while [[ $# > 1 ]]
 do
@@ -194,12 +202,12 @@ if [ -n "$HTTPD_AUTH" ]; then
     # Code below configure IntelMQ Manager to use mod_auth_basic as described here:
     # Ref: https://github.com/certtools/intelmq-manager/blob/master/docs/INSTALL.md#basic-authentication-optional
     # After this you need to modify htpasswd to use better login
-    if [ $1 = "basic" ]; then
+    if [ $HTTPD_AUTH -eq "basic" ]; then
         echo ' ┌▶ Auth module: mod_auth_basic'
         echo ' ├─▶ Install necessary APT packages'
         apt-get install apache2-utils
-        echo ' ├─▶ Create /etc/.htpasswd (login as admin:admin)'
-        htpasswd -c /etc/.htpasswd admin admin
+        echo ' ├─▶ Create /etc/.htpasswd (login as admin with password below)'
+        htpasswd -c /etc/.htpasswd admin
         echo ' ├─▶ Overwrite /etc/apache2/sites-available/000-default.conf'
         wget -q https://raw.githubusercontent.com/mariuszlitwin/intelmq_bootstrap/master/config/000-default.conf -O /etc/apache2/sites-available/000-default.conf
         echo ' └─▶ Restart apache2'
@@ -209,7 +217,7 @@ if [ -n "$HTTPD_AUTH" ]; then
     # Code below configure IntelMQ Manager to use mod_auth_openidc 
     # (Google OAuth2) as described here:
     # Ref: https://github.com/pingidentity/mod_auth_openidc
-    if [ $1 = "google" ]; then
+    if [ $HTTPD_AUTH -eq "google" ]; then
         echo ' ─▶ Under development. Sorry'
         #echo ' ┌──▶ Auth module: libapache2-mod-auth-openidc-1.8.8-1'
         #echo ' ├─▶ Download and install mod-auth-openidc deb package'

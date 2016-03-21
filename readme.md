@@ -19,6 +19,6 @@ Script capabilities are:
 
 Basic usage of script:
 ```bash
-bootstrap.sh [-a basic|google] [-d <example.com>] ```
+bootstrap.sh [-a basic|google] [-d <example.com>]```
 
 I'm currently trying to fit Google OAuth2 in basic setup (-a google), but it's still WIP. At this moment this switch makes totally nothing. 
