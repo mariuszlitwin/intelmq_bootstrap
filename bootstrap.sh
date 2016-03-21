@@ -28,7 +28,7 @@ if [ -n "$LC_ALL" ]; then
 else
     echo "LC_ALL locale is not set, shame on you"
     sleep 2
-    echo "OK, I will setup it to C..."
+    echo "OK, I will set it to C..."
     export LC_ALL="C"
     sleep 2
 fi
@@ -73,11 +73,6 @@ done
 
 ######################### IntelMQ ##############################################
 echo ' ┌▶ IntelMQ'
-echo ' ├─▶ Base config'
-    mkdir -p /opt/intelmq
-    useradd -d /opt/intelmq -U -s /bin/bash intelmq
-    echo 'export PATH="$PATH:$HOME/bin"' >> /opt/intelmq/.profile
-    echo 'export INTELMQ_PYTHON=/usr/bin/python3' >> /opt/intelmq/.profile
 echo ' ├─▶ Install base apt packages'
     apt-get update -qq
     apt-get upgrade -y -qq
@@ -88,40 +83,39 @@ echo ' ├─▶ Install base apt packages'
                            libssl-dev \
                            libpq-dev \
                            python-dev \
-                           python3 \
-                           python3-pip \
+                           python \
+                           python-pip \
                            git \
-                           wget \
                            redis-server
 
 echo ' ├─▶ Update PIP'
     wget -q "https://bootstrap.pypa.io/get-pip.py" -O "/tmp/get-pip.py"
-    python3 /tmp/get-pip.py
+    python2 /tmp/get-pip.py
 echo ' ├─▶ Clone IntelMQ repo and reverse to proper commit'
     git clone https://github.com/mariuszlitwin/intelmq.git /tmp/intelmq
     cd /tmp/intelmq
     git reset --hard 5cc82fd613bd4dd37d67651d8ef7a89a9e07b9cc
 echo ' ├─▶ Install basic pip modules'
-    pip3 install -q --upgrade pyopenssl ndg-httpsclient pyasn1
-    pip3 install -q -r /tmp/intelmq/REQUIREMENTS
-    pip3 install -q /tmp/intelmq
+    pip2 install -q --upgrade pyopenssl ndg-httpsclient pyasn1 urllib3[secure]
+    pip2 install -q -r /tmp/intelmq/REQUIREMENTS
+    pip2 install -q .
 echo ' ├─▶ Install pip modules for bots'
 echo ' ├──▶ Mail Collector'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/collectors/mail/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/collectors/mail/REQUIREMENTS.txt
 echo ' ├──▶ RT Collector'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/collectors/rt/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/collectors/rt/REQUIREMENTS.txt
 echo ' ├──▶ AlienVault OTX Collector'
-    pip3 install -q git+git://github.com/AlienVault-Labs/OTX-Python-SDK
+    pip2 install -q git+git://github.com/AlienVault-Labs/OTX-Python-SDK
 echo ' ├──▶ Blueliv Collector'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/collectors/blueliv/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/collectors/blueliv/REQUIREMENTS.txt
 echo ' ├──▶ n6stomp Collector'
-    pip3 install -q stomp.py
+    pip2 install -q stomp.py
 echo ' ├──▶ XMPP Collector'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/collectors/xmpp/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/collectors/xmpp/REQUIREMENTS.txt
 echo ' ├──▶ Abusix Expert'
-    pip3 install -q -U git+git://github.com/mariuszlitwin/querycontacts
+    pip2 install -q -U git+git://github.com/mariuszlitwin/querycontacts
 echo ' ├──▶ ASN_Lookup Expert'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/experts/asn_lookup/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/experts/asn_lookup/REQUIREMENTS.txt
     mkdir /opt/intelmq/var/lib/bots/asn_lookup/
     cd /tmp/
     pyasn_util_download.py --latest
@@ -130,7 +124,7 @@ echo ' ├──▶ ASN_Lookup Expert'
     mv /tmp/ipasn.dat /opt/intelmq/var/lib/bots/asn_lookup/ipasn.dat
     chown -R intelmq.intelmq /opt/intelmq/var/lib/bots/asn_lookup
 echo ' ├──▶ MaxMind GeoIP Expert'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/experts/maxmind_geoip/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/experts/maxmind_geoip/REQUIREMENTS.txt
     mkdir -p /opt/intelmq/var/lib/bots/maxmind_geoip
     wget -q http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz -O /tmp/GeoLite2-City.mmdb.gz
     gunzip /tmp/GeoLite2-City.mmdb.gz
@@ -142,19 +136,21 @@ echo ' ├──▶ Tor_Nodes Expert'
     bzip2 -d /tmp/latest.bz2
     mv /tmp/latest /opt/intelmq/var/lib/bots/tor_nodes/tor_nodes.dat
 echo ' ├──▶ BigQuery Output'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/outputs/bigquery/REQUIREMENTS
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/outputs/bigquery/REQUIREMENTS
 echo ' ├──▶ ElasticSearch Output'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/outputs/elasticsearch/REQUIREMENTS
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/outputs/elasticsearch/REQUIREMENTS
 echo ' ├──▶ MongoDB Output'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/outputs/mongodb/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/outputs/mongodb/REQUIREMENTS.txt
 echo ' ├──▶ PostgreSQL Output'
-    pip3 install -q -r /tmp/intelmq/intelmq/bots/outputs/postgresql/REQUIREMENTS.txt
+    pip2 install -q -r /tmp/intelmq/intelmq/bots/outputs/postgresql/REQUIREMENTS.txt
 echo ' ├─▶ Install IntelMQ'
     cd /tmp/intelmq
-    python3 setup.py install
+    python2 setup.py install
+echo ' ├─▶ Base config'
+    useradd -d /opt/intelmq -U -s /bin/bash intelmq
+    echo 'export PATH="$PATH:$HOME/bin"' >> /opt/intelmq/.profile
 echo ' ├─▶ Move default config to /opt/intelmq, fixes'
     mkdir -p /opt/intelmq/var/log
-    mkdir -p /opt/intelmq/etc
     cp /tmp/intelmq/intelmq/conf/* /opt/intelmq/etc/
     cp /tmp/intelmq/intelmq/bots/BOTS /opt/intelmq/etc/
     chmod -R 0770 /opt/intelmq
@@ -189,10 +185,7 @@ echo ' ├─▶ Download and install IntelMQ Manager'
     cp -R /tmp/intelmq-manager/intelmq-manager/* /var/www/html/
     chown -R www-data.www-data /var/www/html/
     usermod -a -G intelmq www-data
-    echo "www-data ALL=(intelmq) NOPASSWD: /usr/local/bin/intelmqctl" >> /etc/sudoers
-echo ' ├─▶ # Fix for Python3'
-    sed -i 's|#!/usr/bin/env python|#!/usr/bin/env python3.4|g' /usr/local/bin/intelmqctl
-    sed -i "s|('INTELMQ_PYTHON', 'python')|('INTELMQ_PYTHON', 'python3.4')|g" /usr/local/bin/intelmqctl   
+    echo "www-data ALL=(intelmq) NOPASSWD: /usr/local/bin/intelmqctl" >> /etc/sudoers  
 echo ' └─▶ # Add init script for apache2'
     service apache2 enable
     service apache2 start
@@ -207,7 +200,7 @@ if [ -n "$HTTPD_AUTH" ]; then
     if [ $HTTPD_AUTH -eq "basic" ]; then
         echo ' ┌▶ Auth module: mod_auth_basic'
         echo ' ├─▶ Install necessary APT packages'
-        apt-get install apache2-utils
+        apt-get -q install apache2-utils
         echo ' ├─▶ Create /etc/.htpasswd (login as admin with password below)'
         htpasswd -c /etc/.htpasswd admin
         echo ' ├─▶ Overwrite /etc/apache2/sites-available/000-default.conf'
